@@ -1,5 +1,7 @@
+import UIKit
 import Foundation
 import Alamofire
+import Firebase
 import SwiftyJSON
 
 class ApartmentPopupView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
