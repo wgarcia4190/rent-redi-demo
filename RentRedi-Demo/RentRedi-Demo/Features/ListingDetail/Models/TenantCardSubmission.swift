@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import Firebase
+import FirebaseAuth
 import SwiftyJSON
 
 public class TenantCardSubmission {

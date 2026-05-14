@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		38C618B52FB4EDCF00D2D755 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618B42FB4EDCF00D2D755 /* SwiftyJSON */; };
 		38C618B82FB4EE1500D2D755 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618B72FB4EE1500D2D755 /* Alamofire */; };
-		38C618BA2FB4EE1500D2D755 /* AlamofireDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618B92FB4EE1500D2D755 /* AlamofireDynamic */; };
 		38C618D72FB4F0A400D2D755 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618D62FB4F0A400D2D755 /* FirebaseAI */; };
 		38C618D92FB4F0A400D2D755 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618D82FB4F0A400D2D755 /* FirebaseAILogic */; };
 		38C618DB2FB4F0A400D2D755 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 38C618DA2FB4F0A400D2D755 /* FirebaseAnalytics */; };
@@ -83,7 +82,6 @@
 				38C618F92FB4F0A400D2D755 /* FirebaseInstallations in Frameworks */,
 				38C618B82FB4EE1500D2D755 /* Alamofire in Frameworks */,
 				38C618F32FB4F0A400D2D755 /* FirebaseFunctions in Frameworks */,
-				38C618BA2FB4EE1500D2D755 /* AlamofireDynamic in Frameworks */,
 				38C618FF2FB4F0A400D2D755 /* FirebasePerformance in Frameworks */,
 				38C618B52FB4EDCF00D2D755 /* SwiftyJSON in Frameworks */,
 				38C618E52FB4F0A400D2D755 /* FirebaseAuth in Frameworks */,
@@ -140,7 +138,6 @@
 				38C619122FB4E80000D2D755 /* RentRediUI */,
 				38C618B42FB4EDCF00D2D755 /* SwiftyJSON */,
 				38C618B72FB4EE1500D2D755 /* Alamofire */,
-				38C618B92FB4EE1500D2D755 /* AlamofireDynamic */,
 				38C618D62FB4F0A400D2D755 /* FirebaseAI */,
 				38C618D82FB4F0A400D2D755 /* FirebaseAILogic */,
 				38C618DA2FB4F0A400D2D755 /* FirebaseAnalytics */,
@@ -483,11 +480,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 38C618B62FB4EE1500D2D755 /* XCRemoteSwiftPackageReference "AlamoFire" */;
 			productName = Alamofire;
-		};
-		38C618B92FB4EE1500D2D755 /* AlamofireDynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 38C618B62FB4EE1500D2D755 /* XCRemoteSwiftPackageReference "AlamoFire" */;
-			productName = AlamofireDynamic;
 		};
 		38C618D62FB4F0A400D2D755 /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;

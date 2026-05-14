@@ -9,7 +9,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ApartmentPopupView" customModule="testCocoa" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ApartmentPopupView" customModule="RentRedi_Demo" customModuleProvider="target">
             <connections>
                 <outlet property="applicationInviteImage" destination="SSa-CE-Cyp" id="Dq5-hE-khZ"/>
                 <outlet property="applicationPhotoDots" destination="bzV-hg-wZl" id="0iT-iC-gaG"/>
@@ -32,7 +32,7 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GUb-zC-DZi">
                     <rect key="frame" x="41.5" y="126" width="331" height="654"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PrY-H9-NHD" userLabel="dismissButton" customClass="roundedButton" customModule="testCocoa" customModuleProvider="target">
+                        <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PrY-H9-NHD" userLabel="dismissButton" customClass="roundedButton" customModule="RentRedi_Demo" customModuleProvider="target">
                             <rect key="frame" x="10" y="10" width="64.5" height="64.5"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
@@ -115,7 +115,7 @@
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XQy-t7-Def" userLabel="applyButton" customClass="roundedButton" customModule="testCocoa" customModuleProvider="target">
+                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XQy-t7-Def" userLabel="applyButton" customClass="roundedButton" customModule="RentRedi_Demo" customModuleProvider="target">
                             <rect key="frame" x="21.5" y="581" width="288" height="40"/>
                             <color key="backgroundColor" red="0.2784313725" green="0.66274509800000003" blue="0.8862745098" alpha="1" colorSpace="calibratedRGB"/>
                             <constraints>
