@@ -40,13 +40,17 @@ extension RentRediPlusHomeVC: ApartmentPopupViewDelegate {
         applicationPopup.isHidden = true
     }
 
+    func showApplicationPopup() {
+        applicationPopup.isHidden = false
+    }
+
     func presentApplyHome(for submission: TenantCardSubmission) {
         let viewController = mainStoryboard.instantiateViewController(
             withIdentifier: ListingDetailConstants.Storyboard.applyHome
         ) as! ApplyHomeVC
         viewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
         viewController.tenantCardSubmission = submission
-        viewController.homeVC = self
+        viewController.delegate = self
         present(viewController, animated: true)
     }
 
@@ -57,6 +61,15 @@ extension RentRediPlusHomeVC: ApartmentPopupViewDelegate {
         viewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
         viewController.tenantCardSubmission = submission
         present(viewController, animated: true)
+    }
+}
+
+// MARK: - ApplyHomeVCDelegate
+
+extension RentRediPlusHomeVC: ApplyHomeVCDelegate {
+
+    func applyHomeDidDismiss() {
+        showApplicationPopup()
     }
 }
 

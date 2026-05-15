@@ -4,6 +4,7 @@ protocol ApartmentPopupViewDelegate: AnyObject {
     var tenantCardSubmission: TenantCardSubmission? { get }
     var hasExistingInviteApplication: Bool { get set }
     func hideApplicationPopup()
+    func showApplicationPopup()
     func hideTenantToDoAlert()
     func setupTenantToDoAlert()
     func updateToDoAlert(title: String, description: String, type: TenantToDoAlertKind)
