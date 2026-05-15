@@ -73,7 +73,10 @@ private extension RentRediPlusHomeVC {
             databaseReference: viewModel.databaseReference,
             inviteStatusWriter: viewModel
         )
-        let popup = ApartmentPopupView(frame: .zero, viewModel: popupViewModel)
+        let popup = ApartmentPopupView(
+            frame: .zero,
+            viewModel: popupViewModel
+        )
         popup.translatesAutoresizingMaskIntoConstraints = false
         popup.delegate = self
         view.addSubview(popup)
