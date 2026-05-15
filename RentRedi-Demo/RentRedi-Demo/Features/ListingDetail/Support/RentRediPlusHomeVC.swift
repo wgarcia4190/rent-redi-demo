@@ -10,11 +10,22 @@ final class RentRediPlusHomeVC: UIViewController {
 
     var hasExistingInviteApplication = false
 
+    private let maintenanceDemoButton = UIButton(type: .system)
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         installApplicationPopup()
+        installMaintenanceDemoButton()
         loadInitialSubmission()
+    }
+
+    @objc private func maintenanceDemoTapped() {
+        hideApplicationPopup()
+        let viewController = MaintenanceRequestDetailVC()
+        viewController.modalPresentationStyle = .fullScreen
+        viewController.delegate = self
+        present(viewController, animated: true)
     }
 
     // MARK: - Tenant to-do (demo stubs)
@@ -73,12 +84,40 @@ extension RentRediPlusHomeVC: ApplyHomeVCDelegate {
     }
 }
 
+// MARK: - MaintenanceRequestDetailVCDelegate
+
+extension RentRediPlusHomeVC: MaintenanceRequestDetailVCDelegate {
+
+    func maintenanceRequestDetailDidDismiss() {
+        showApplicationPopup()
+    }
+}
+
 // MARK: - Setup
 
 private extension RentRediPlusHomeVC {
 
     var mainStoryboard: UIStoryboard {
         UIStoryboard(name: ListingDetailConstants.Storyboard.main, bundle: nil)
+    }
+
+    func installMaintenanceDemoButton() {
+        maintenanceDemoButton.translatesAutoresizingMaskIntoConstraints = false
+        var config = UIButton.Configuration.filled()
+        config.title = ListingDetailConstants.DemoEntry.maintenanceRequestButtonTitle
+        config.image = UIImage(systemName: "wrench.and.screwdriver")
+        config.imagePadding = 6
+        config.cornerStyle = .medium
+        config.baseBackgroundColor = .systemIndigo
+        maintenanceDemoButton.configuration = config
+        maintenanceDemoButton.addTarget(self, action: #selector(maintenanceDemoTapped), for: .touchUpInside)
+
+        view.addSubview(maintenanceDemoButton)
+        view.bringSubviewToFront(maintenanceDemoButton)
+        NSLayoutConstraint.activate([
+            maintenanceDemoButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            maintenanceDemoButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+        ])
     }
 
     func installApplicationPopup() {

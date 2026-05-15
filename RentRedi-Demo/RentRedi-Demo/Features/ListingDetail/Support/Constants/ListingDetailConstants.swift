@@ -11,6 +11,10 @@ enum ListingDetailConstants {
         static let prequalifyHome = "prequalifyHomeScreen"
     }
 
+    enum DemoEntry {
+        static let maintenanceRequestButtonTitle = "Maintenance request"
+    }
+
     enum InviteStatus {
         static let accepted = "accepted"
         static let viewed = "viewed"
