@@ -3,12 +3,15 @@ import FirebaseDatabase
 
 class RentRediPlusHomeVC: UIViewController {
 
-    private let demoRenterProfileUserID = "rentredi_demo_renter"
+    private let viewModel = RentRediPlusHomeViewModel()
 
-    let ref = Database.database().reference()
+    /// Remove after moving logic from ApartmentPopupView to ViewModel
+    var ref: DatabaseReference { viewModel.databaseReference }
 
     var applicationPopup: ApartmentPopupView!
-    var tenantCardSubmission: TenantCardSubmission?
+
+    var tenantCardSubmission: TenantCardSubmission? { viewModel.tenantCardSubmission }
+
     var hasExistingInviteApplication = false
 
     override func viewDidLoad() {
@@ -27,46 +30,17 @@ class RentRediPlusHomeVC: UIViewController {
         ])
         applicationPopup = popup
 
-        loadFirstTenantCardSubmission()
-    }
-
-    private func renterTenantCardSubmissionsRef(uid: String) -> DatabaseReference {
-        ref.child("allUsers").child("renterProfiles").child(uid).child("tenantCardSubmissions")
-    }
-
-    private func loadFirstTenantCardSubmission() {
-        let uid = demoRenterProfileUserID
-
-        renterTenantCardSubmissionsRef(uid: uid).observeSingleEvent(of: .value) { [weak self] snapshot in
+        viewModel.loadFirstTenantCardSubmission { [weak self] submission in
             guard let self else { return }
-
-            let child = self.firstSubmissionSnapshot(under: snapshot)
-            let submission = child.flatMap { TenantCardSubmission(snapshot: $0) }
-
-            DispatchQueue.main.async {
-                self.tenantCardSubmission = submission
-                self.applicationPopup.tenantCardSubmission = submission
-                self.applicationPopup.updateViews()
-                if let submission,
-                   let ownerID = submission.ownerID,
-                   let propertyID = submission.propertyID,
-                   let unitID = submission.unitID {
-                    self.applicationPopup.fetchListingDetails(ownerID: ownerID, propertyID: propertyID, unitID: unitID)
-                }
+            self.applicationPopup.tenantCardSubmission = submission
+            self.applicationPopup.updateViews()
+            if let submission,
+               let ownerID = submission.ownerID,
+               let propertyID = submission.propertyID,
+               let unitID = submission.unitID {
+                self.applicationPopup.fetchListingDetails(ownerID: ownerID, propertyID: propertyID, unitID: unitID)
             }
         }
-    }
-
-    private func firstSubmissionSnapshot(under snapshot: DataSnapshot) -> DataSnapshot? {
-        if snapshot.hasChild("0") {
-            return snapshot.childSnapshot(forPath: "0")
-        }
-        var children: [DataSnapshot] = []
-        for item in snapshot.children {
-            guard let child = item as? DataSnapshot, child.exists() else { continue }
-            children.append(child)
-        }
-        return children.sorted { $0.key < $1.key }.first
     }
 
     func hideTenantToDoAlert() {}
