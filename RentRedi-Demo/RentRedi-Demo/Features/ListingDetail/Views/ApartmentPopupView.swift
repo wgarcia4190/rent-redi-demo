@@ -1,14 +1,12 @@
 import UIKit
 import Foundation
+import RentRediUI
 
 class ApartmentPopupView: UIView {
-
-    private let apartmentPhotoReuseIdentifier = "apartmentPhotoCell"
 
     private lazy var viewModel: ApartmentPopupViewModel = ApartmentPopupViewModel()
 
     weak var delegate: RentRediPlusHomeVC?
-    var applicationPhotosUrls = [URL]()
     var tenantCardSubmission: TenantCardSubmission?
 
     @IBOutlet weak var applicationPopupTitle: UILabel!
@@ -17,10 +15,8 @@ class ApartmentPopupView: UIView {
     @IBOutlet weak var applicationPopupStreetAddress: UILabel!
     @IBOutlet weak var applicationPopupRentAmount: UILabel!
     @IBOutlet weak var applicationPopupRegion: UILabel!
-    @IBOutlet weak var applicationPopupPhotos: UICollectionView!
+    @IBOutlet weak var photoCarousel: URLImageCarouselView!
     @IBOutlet weak var applicationInviteImage: UIImageView!
-    @IBOutlet weak var applicationPopupPageNumber: UILabel!
-    @IBOutlet weak var applicationPhotoDots: UIPageControl!
     @IBOutlet weak var startApplicationButton: roundedButton!
 
     @IBAction func startApplicationTapped(_ sender: Any) {
@@ -72,16 +68,6 @@ class ApartmentPopupView: UIView {
         view.frame = bounds
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(view)
-        wireUpPhotosCollectionView()
-    }
-
-    private func wireUpPhotosCollectionView() {
-        applicationPopupPhotos.delegate = self
-        applicationPopupPhotos.dataSource = self
-        applicationPopupPhotos.register(
-            ApplicationApartmentPhotoCell.self,
-            forCellWithReuseIdentifier: apartmentPhotoReuseIdentifier
-        )
     }
 
     func loadViewFromNib() -> UIView? {
@@ -137,10 +123,11 @@ class ApartmentPopupView: UIView {
             }
         }
 
-        applicationPhotosUrls = []
+        photoCarousel.setImageURLs([])
+        photoCarousel.isHidden = true
         viewModel.loadListingPhotoURLs(ownerID: ownerID, propertyID: propertyID, unitID: unitID) { [weak self] urls in
             guard let self else { return }
-            self.applicationPhotosUrls = urls
+            self.photoCarousel.setImageURLs(urls)
             self.showAndUpdateApplicationUnitAndPropertyPhotos()
         } onDefaultInvite: { [weak self] in
             guard let self else { return }
@@ -149,87 +136,20 @@ class ApartmentPopupView: UIView {
     }
 
     func showAndUpdateApplicationUnitAndPropertyPhotos() {
-        if !applicationPhotosUrls.isEmpty {
-            DispatchQueue.main.async {
-                self.applicationPhotoDots.isHidden = false
-                self.applicationPopupPhotos.isHidden = false
-                self.applicationPopupRegion.isHidden = false
-                self.applicationPopupPhotos.reloadData()
-                self.applicationPopupPageNumber.text = "1 of \(self.applicationPhotosUrls.count)"
-            }
+        guard !photoCarousel.isEmpty else { return }
+        DispatchQueue.main.async {
+            self.applicationInviteImage.isHidden = true
+            self.photoCarousel.isHidden = false
+            self.applicationPopupRegion.isHidden = false
         }
     }
 
     func showDefaultApplicationInvite() {
         DispatchQueue.main.async {
             self.applicationInviteImage.isHidden = false
-            self.applicationPhotoDots.isHidden = true
-            self.applicationPopupPhotos.isHidden = true
-            self.applicationPopupPageNumber.isHidden = true
+            self.photoCarousel.isHidden = true
             self.applicationPopupStreetAddress.text = self.viewModel.defaultInviteStreetLine(submission: self.tenantCardSubmission)
             self.applicationPopupRegion.isHidden = true
         }
     }
-}
-
-// MARK: - UICollectionViewDataSource
-
-extension ApartmentPopupView: UICollectionViewDataSource {
-
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        1
-    }
-
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == applicationPopupPhotos {
-            applicationPhotoDots.numberOfPages = applicationPhotosUrls.count
-            return applicationPhotosUrls.count
-        }
-        return 0
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView == applicationPopupPhotos {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: apartmentPhotoReuseIdentifier, for: indexPath) as! ApplicationApartmentPhotoCell
-
-            let url = applicationPhotosUrls[indexPath.row]
-            let data = try? Data(contentsOf: url)
-            if let imageData = data {
-                cell.apartmentPhoto.image = UIImage(data: imageData)
-                cell.bringSubviewToFront(cell.apartmentPhoto)
-            }
-
-            return cell
-        }
-        return collectionView.dequeueReusableCell(withReuseIdentifier: apartmentPhotoReuseIdentifier, for: indexPath) as! ApplicationApartmentPhotoCell
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-
-extension ApartmentPopupView: UICollectionViewDelegateFlowLayout {
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if collectionView == applicationPopupPhotos {
-            let width = collectionView.frame.width
-            let height = collectionView.frame.height
-            return CGSize(width: width, height: height)
-        }
-        return CGSize(width: 0, height: 0)
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-
-extension ApartmentPopupView: UICollectionViewDelegate {
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView == applicationPopupPhotos {
-            let pageNumber = Int((applicationPopupPhotos.contentOffset.x / applicationPopupPhotos.frame.width).rounded(.toNearestOrAwayFromZero))
-            applicationPhotoDots.currentPage = pageNumber
-            applicationPopupPageNumber.text = "\(pageNumber + 1) of \(applicationPhotosUrls.count)"
-        }
-    }
-
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {}
 }
