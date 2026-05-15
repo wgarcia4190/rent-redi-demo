@@ -76,10 +76,6 @@ class ApartmentPopupView: UIView, UICollectionViewDelegate, UICollectionViewData
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         commonInit()
-        //set the collection delegate and datasource of the photos to self(update collection view when Apartment Popup view data updates)
-        applicationPopupPhotos.delegate = self
-        applicationPopupPhotos.dataSource = self
-        applicationPopupPhotos.register(ApplicationApartmentPhotoCell.self, forCellWithReuseIdentifier: apartmentPhotoReuseIdentifier)
     }
     //override the default initializer
     override init(frame: CGRect) {
@@ -91,8 +87,19 @@ class ApartmentPopupView: UIView, UICollectionViewDelegate, UICollectionViewData
     //custom initializer
     func commonInit() {
         guard let view = loadViewFromNib() else { return }
-        view.frame = self.bounds
-        self.addSubview(view)
+        view.frame = bounds
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(view)
+        wireUpPhotosCollectionView()
+    }
+
+    private func wireUpPhotosCollectionView() {
+        applicationPopupPhotos.delegate = self
+        applicationPopupPhotos.dataSource = self
+        applicationPopupPhotos.register(
+            ApplicationApartmentPhotoCell.self,
+            forCellWithReuseIdentifier: apartmentPhotoReuseIdentifier
+        )
     }
     //load view from nib named ApartmentPopupView
     func loadViewFromNib() -> UIView? {

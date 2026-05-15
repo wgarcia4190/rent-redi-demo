@@ -1,5 +1,5 @@
-[
-  {
+{
+  "0": {
     "unitCode": "A-101",
     "ownerID": "owner_demo_uid_001",
     "propertyID": "property_demo_001",
@@ -26,7 +26,7 @@
     "linkedApplicationID": null,
     "linkedPrequalificationID": null
   },
-  {
+  "1": {
     "unitCode": "B-2",
     "ownerID": "owner_demo_uid_001",
     "propertyID": "property_demo_002",
@@ -53,4 +53,4 @@
     "linkedApplicationID": null,
     "linkedPrequalificationID": null
   }
-]
+}
