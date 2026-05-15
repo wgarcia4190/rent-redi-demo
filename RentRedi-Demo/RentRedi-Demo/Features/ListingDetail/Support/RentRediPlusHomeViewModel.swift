@@ -11,7 +11,7 @@ final class RentRediPlusHomeViewModel {
 
     init(
         databaseReference: DatabaseReference = Database.database().reference(),
-        demoRenterProfileUserID: String = "rentredi_demo_renter"
+        demoRenterProfileUserID: String = ListingDetailConstants.Demo.renterProfileUserID
     ) {
         self.databaseReference = databaseReference
         self.demoRenterProfileUserID = demoRenterProfileUserID
@@ -32,16 +32,30 @@ final class RentRediPlusHomeViewModel {
     }
 
     private var renterTenantCardSubmissionsRef: DatabaseReference {
-        databaseReference
-            .child("allUsers")
-            .child("renterProfiles")
-            .child(demoRenterProfileUserID)
-            .child("tenantCardSubmissions")
+        FirebaseDatabaseConstants.Reference.renterTenantCardSubmissions(
+            databaseReference,
+            renterID: demoRenterProfileUserID
+        )
+    }
+
+    func markInviteAccepted(submission: TenantCardSubmission) {
+        setInviteStatus(ListingDetailConstants.InviteStatus.accepted, submission: submission)
+    }
+
+    func markInviteViewed(submission: TenantCardSubmission) {
+        setInviteStatus(ListingDetailConstants.InviteStatus.viewed, submission: submission)
+    }
+
+    private func setInviteStatus(_ status: String, submission: TenantCardSubmission) {
+        guard let key = FirebaseDatabaseConstants.InviteTenantKey.childKey(for: submission) else { return }
+        FirebaseDatabaseConstants.Reference.inviteStatus(databaseReference, inviteKey: key)
+            .setValue(status)
     }
 
     private func firstSubmissionSnapshot(under snapshot: DataSnapshot) -> DataSnapshot? {
-        if snapshot.hasChild("0") {
-            return snapshot.childSnapshot(forPath: "0")
+        let preferredIndex = FirebaseDatabaseConstants.SubmissionIndex.preferredFirst
+        if snapshot.hasChild(preferredIndex) {
+            return snapshot.childSnapshot(forPath: preferredIndex)
         }
         var children: [DataSnapshot] = []
         for item in snapshot.children {
@@ -51,3 +65,5 @@ final class RentRediPlusHomeViewModel {
         return children.sorted { $0.key < $1.key }.first
     }
 }
+
+extension RentRediPlusHomeViewModel: InviteStatusWriting {}

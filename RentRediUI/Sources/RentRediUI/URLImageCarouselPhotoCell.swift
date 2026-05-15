@@ -5,19 +5,46 @@ final class URLImageCarouselPhotoCell: UICollectionViewCell {
     let imageView = UIImageView()
 
     private var dataTask: URLSessionDataTask?
-    private var pendingLoadID: UUID?
+    private var activeLoadID: UUID?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        install()
+        installImageView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        install()
+        installImageView()
     }
 
-    private func install() {
+    func loadImage(from url: URL) {
+        cancelImageLoad()
+        let loadID = UUID()
+        activeLoadID = loadID
+        imageView.image = nil
+
+        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            guard let self else { return }
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            guard let data, let image = UIImage(data: data) else { return }
+
+            DispatchQueue.main.async {
+                guard self.activeLoadID == loadID else { return }
+                self.imageView.image = image
+            }
+        }
+        dataTask = task
+        task.resume()
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancelImageLoad()
+    }
+
+    // MARK: - Private
+
+    private func installImageView() {
         guard imageView.superview == nil else { return }
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFill
@@ -31,39 +58,10 @@ final class URLImageCarouselPhotoCell: UICollectionViewCell {
         ])
     }
 
-    /// Loads image data off the main thread and updates `imageView` on the main queue. Cancels any in-flight load when reused or when a new URL is set.
-    func loadImage(from url: URL) {
+    private func cancelImageLoad() {
         dataTask?.cancel()
         dataTask = nil
-
-        let loadID = UUID()
-        pendingLoadID = loadID
-        imageView.image = nil
-
-        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
-            guard let self else { return }
-            if let urlError = error as? URLError, urlError.code == .cancelled {
-                return
-            }
-            guard let data, !data.isEmpty else { return }
-            let image = UIImage(data: data)
-            DispatchQueue.main.async {
-                guard self.pendingLoadID == loadID else { return }
-                self.imageView.image = image
-                if image != nil {
-                    self.contentView.bringSubviewToFront(self.imageView)
-                }
-            }
-        }
-        dataTask = task
-        task.resume()
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        dataTask?.cancel()
-        dataTask = nil
-        pendingLoadID = nil
+        activeLoadID = nil
         imageView.image = nil
     }
 }

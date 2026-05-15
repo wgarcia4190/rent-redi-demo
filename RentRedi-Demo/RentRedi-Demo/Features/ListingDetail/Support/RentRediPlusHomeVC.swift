@@ -1,14 +1,10 @@
 import UIKit
-import FirebaseDatabase
 
-class RentRediPlusHomeVC: UIViewController {
+final class RentRediPlusHomeVC: UIViewController {
 
     private let viewModel = RentRediPlusHomeViewModel()
 
-    /// Remove after moving logic from ApartmentPopupView to ViewModel
-    var ref: DatabaseReference { viewModel.databaseReference }
-
-    var applicationPopup: ApartmentPopupView!
+    private(set) var applicationPopup: ApartmentPopupView!
 
     var tenantCardSubmission: TenantCardSubmission? { viewModel.tenantCardSubmission }
 
@@ -17,31 +13,11 @@ class RentRediPlusHomeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-
-        let popup = ApartmentPopupView(frame: .zero)
-        popup.translatesAutoresizingMaskIntoConstraints = false
-        popup.delegate = self
-        view.addSubview(popup)
-        NSLayoutConstraint.activate([
-            popup.topAnchor.constraint(equalTo: view.topAnchor),
-            popup.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            popup.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            popup.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-        applicationPopup = popup
-
-        viewModel.loadFirstTenantCardSubmission { [weak self] submission in
-            guard let self else { return }
-            self.applicationPopup.tenantCardSubmission = submission
-            self.applicationPopup.updateViews()
-            if let submission,
-               let ownerID = submission.ownerID,
-               let propertyID = submission.propertyID,
-               let unitID = submission.unitID {
-                self.applicationPopup.fetchListingDetails(ownerID: ownerID, propertyID: propertyID, unitID: unitID)
-            }
-        }
+        installApplicationPopup()
+        loadInitialSubmission()
     }
+
+    // MARK: - Tenant to-do (demo stubs)
 
     func hideTenantToDoAlert() {}
 
@@ -53,5 +29,71 @@ class RentRediPlusHomeVC: UIViewController {
 
     func applyPrequalifyVerb(noun: String) -> String {
         noun
+    }
+}
+
+// MARK: - ApartmentPopupViewDelegate
+
+extension RentRediPlusHomeVC: ApartmentPopupViewDelegate {
+
+    func hideApplicationPopup() {
+        applicationPopup.isHidden = true
+    }
+
+    func presentApplyHome(for submission: TenantCardSubmission) {
+        let viewController = mainStoryboard.instantiateViewController(
+            withIdentifier: ListingDetailConstants.Storyboard.applyHome
+        ) as! ApplyHomeVC
+        viewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        viewController.tenantCardSubmission = submission
+        viewController.homeVC = self
+        present(viewController, animated: true)
+    }
+
+    func presentPrequalifyHome(for submission: TenantCardSubmission) {
+        let viewController = mainStoryboard.instantiateViewController(
+            withIdentifier: ListingDetailConstants.Storyboard.prequalifyHome
+        ) as! PrequalifyHomeVC
+        viewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        viewController.tenantCardSubmission = submission
+        present(viewController, animated: true)
+    }
+}
+
+// MARK: - Setup
+
+private extension RentRediPlusHomeVC {
+
+    var mainStoryboard: UIStoryboard {
+        UIStoryboard(name: ListingDetailConstants.Storyboard.main, bundle: nil)
+    }
+
+    func installApplicationPopup() {
+        let popupViewModel = ApartmentPopupViewModel(
+            databaseReference: viewModel.databaseReference,
+            inviteStatusWriter: viewModel
+        )
+        let popup = ApartmentPopupView(frame: .zero, viewModel: popupViewModel)
+        popup.translatesAutoresizingMaskIntoConstraints = false
+        popup.delegate = self
+        view.addSubview(popup)
+        NSLayoutConstraint.activate([
+            popup.topAnchor.constraint(equalTo: view.topAnchor),
+            popup.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            popup.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            popup.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        applicationPopup = popup
+    }
+
+    func loadInitialSubmission() {
+        viewModel.loadFirstTenantCardSubmission { [weak self] submission in
+            guard let self else { return }
+            applicationPopup.tenantCardSubmission = submission
+            applicationPopup.updateViews()
+            if let unit = submission?.listingUnit {
+                applicationPopup.fetchListingDetails(for: unit)
+            }
+        }
     }
 }

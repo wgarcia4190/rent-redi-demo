@@ -13,30 +13,41 @@ struct ApartmentPopupInviteDisplay {
 
 final class ApartmentPopupViewModel {
 
+    enum ApplicationFlow {
+        case application
+        case prequalification
+    }
+
     private let databaseReference: DatabaseReference
     private let databaseFunctions: DatabaseFunctions
+    private weak var inviteStatusWriter: InviteStatusWriting?
 
     init(
         databaseReference: DatabaseReference = Database.database().reference(),
-        databaseFunctions: DatabaseFunctions = DatabaseFunctions()
+        databaseFunctions: DatabaseFunctions = DatabaseFunctions(),
+        inviteStatusWriter: InviteStatusWriting? = nil
     ) {
         self.databaseReference = databaseReference
         self.databaseFunctions = databaseFunctions
+        self.inviteStatusWriter = inviteStatusWriter
     }
 
-    // MARK: - Invite status
+    // MARK: - Invite
 
-    func updateInviteStatus(_ status: String, submission: TenantCardSubmission) {
-        guard let key = inviteTenantChildKey(for: submission) else { return }
-        databaseReference.child("inviteTenant").child(key).child("inviteStatus").setValue(status)
+    func markInviteAccepted(submission: TenantCardSubmission) {
+        inviteStatusWriter?.markInviteAccepted(submission: submission)
     }
 
-    func startApplicationFlow(for submission: TenantCardSubmission) -> StartApplicationFlow? {
-        guard inviteTenantChildKey(for: submission) != nil else { return nil }
+    func markInviteViewed(submission: TenantCardSubmission) {
+        inviteStatusWriter?.markInviteViewed(submission: submission)
+    }
+
+    func applicationFlow(for submission: TenantCardSubmission) -> ApplicationFlow? {
+        guard FirebaseDatabaseConstants.InviteTenantKey.childKey(for: submission) != nil else { return nil }
         switch submission.submissionType {
-        case "application":
+        case ListingDetailConstants.SubmissionType.application:
             return .application
-        case "prequalification":
+        case ListingDetailConstants.SubmissionType.prequalification:
             return .prequalification
         default:
             databaseFunctions.log(message: "Error: No submission type found")
@@ -44,28 +55,16 @@ final class ApartmentPopupViewModel {
         }
     }
 
-    enum StartApplicationFlow {
-        case application
-        case prequalification
-    }
-
-    // MARK: - Invite UI copy
-
     func makeInviteDisplay(submission: TenantCardSubmission?, startButtonTitle: String) -> ApartmentPopupInviteDisplay? {
         guard let submission else { return nil }
         let verb = submission.verb.capitalizeFirstLetter()
-        let titleText = "Invite to \(verb)"
-        let streetAddressText = "\(submission.address ?? "Error, Not Available"), Unit \(submission.unitID ?? "")"
-        let regionLineText = "\(submission.city ?? ""), \(submission.state ?? "") \(submission.zip ?? "")"
-        let todoTitle = "You have been invited to \(verb) to \(submission.fullAddress)."
-        let todoDescription = "Tap to start, or go to '\(submission.submissionType ?? "")'"
         return ApartmentPopupInviteDisplay(
-            titleText: titleText,
-            streetAddressText: streetAddressText,
-            regionLineText: regionLineText,
+            titleText: "Invite to \(verb)",
+            streetAddressText: "\(submission.address ?? "Error, Not Available"), Unit \(submission.unitID ?? "")",
+            regionLineText: "\(submission.city ?? ""), \(submission.state ?? "") \(submission.zip ?? "")",
             startButtonTitle: startButtonTitle,
-            tenantToDoTitle: todoTitle,
-            tenantToDoDescription: todoDescription
+            tenantToDoTitle: "You have been invited to \(verb) to \(submission.fullAddress).",
+            tenantToDoDescription: "Tap to start, or go to '\(submission.submissionType ?? "")'"
         )
     }
 
@@ -75,77 +74,113 @@ final class ApartmentPopupViewModel {
         return "You have been invited to \(verb) to \(address)"
     }
 
-    // MARK: - Listing details
+    // MARK: - Listing
 
-    func fetchListingBedrooms(ownerID: String, propertyID: String, unitID: String, completion: @escaping (String) -> Void) {
-        let path = Self.unitDetailsPath(ownerID: ownerID, propertyID: propertyID, unitID: unitID, field: "numberOfBedrooms")
-        databaseFunctions.readOnceFromFirebaseAndReturnString(pathToValue: path, completion: completion)
-    }
-
-    func fetchListingBathrooms(ownerID: String, propertyID: String, unitID: String, completion: @escaping (String) -> Void) {
-        let path = Self.unitDetailsPath(ownerID: ownerID, propertyID: propertyID, unitID: unitID, field: "numberOfBathrooms")
-        databaseFunctions.readOnceFromFirebaseAndReturnString(pathToValue: path, completion: completion)
-    }
-
-    func fetchListingMonthlyRent(ownerID: String, propertyID: String, unitID: String, completion: @escaping (String) -> Void) {
-        let path = Self.unitDetailsPath(ownerID: ownerID, propertyID: propertyID, unitID: unitID, field: "listingMonthlyRent")
-        databaseFunctions.readOnceFromFirebaseAndReturnString(pathToValue: path, completion: completion)
-    }
-
-    /// Loads unit and property photo maps; calls `onUpdate` whenever new URLs are available, then `onDefaultInvite` if both loads finished with no URLs.
-    func loadListingPhotoURLs(
-        ownerID: String,
-        propertyID: String,
-        unitID: String,
-        onUpdate: @escaping ([URL]) -> Void,
-        onDefaultInvite: @escaping () -> Void
+    func fetchListingDetails(
+        for unit: TenantCardSubmission.ListingUnitReference,
+        onBedrooms: @escaping (String) -> Void,
+        onBathrooms: @escaping (String) -> Void,
+        onMonthlyRent: @escaping (String) -> Void,
+        onPhotoURLs: @escaping ([URL]) -> Void,
+        onNoPhotos: @escaping () -> Void
     ) {
-        let unitPath = Self.unitPhotosPath(ownerID: ownerID, propertyID: propertyID, unitID: unitID)
-        let propertyPath = Self.propertyPhotosPath(ownerID: ownerID, propertyID: propertyID)
+        let ownerID = unit.ownerID
+        let propertyID = unit.propertyID
+        let unitID = unit.unitID
 
-        var urls: [URL] = []
-        var finished = 0
-
-        let handle: ([String: JSON]) -> Void = { json in
-            let new = Self.photoURLs(from: json)
-            urls.append(contentsOf: new)
-            if !urls.isEmpty {
-                onUpdate(urls)
-            }
-            finished += 1
-            if finished == 2, urls.isEmpty {
-                onDefaultInvite()
-            }
-        }
-
-        databaseFunctions.readOnceFromFirebaseAndReturnJSON(pathToValue: unitPath, completion: handle)
-        databaseFunctions.readOnceFromFirebaseAndReturnJSON(pathToValue: propertyPath, completion: handle)
+        fetchUnitDetail(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID,
+            field: FirebaseDatabaseConstants.Field.numberOfBedrooms,
+            completion: onBedrooms
+        )
+        fetchUnitDetail(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID,
+            field: FirebaseDatabaseConstants.Field.numberOfBathrooms,
+            completion: onBathrooms
+        )
+        fetchUnitDetail(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID,
+            field: FirebaseDatabaseConstants.Field.listingMonthlyRent,
+            completion: onMonthlyRent
+        )
+        loadListingPhotoURLs(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID,
+            onPhotoURLs: onPhotoURLs,
+            onNoPhotos: onNoPhotos
+        )
     }
 
     // MARK: - Private
 
-    private func inviteTenantChildKey(for submission: TenantCardSubmission) -> String? {
-        guard let submissionType = submission.submissionType,
-              let ownerID = submission.ownerID,
-              let propertyID = submission.propertyID,
-              let unitID = submission.unitID,
-              let renterID = submission.renterID else { return nil }
-        return "\(ownerID)\(propertyID)\(unitID)\(renterID)_\(submissionType)"
+    private func fetchUnitDetail(
+        ownerID: String,
+        propertyID: String,
+        unitID: String,
+        field: String,
+        completion: @escaping (String) -> Void
+    ) {
+        let path = FirebaseDatabaseConstants.Path.unitDetail(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID,
+            field: field
+        )
+        databaseFunctions.readOnceFromFirebaseAndReturnString(pathToValue: path, completion: completion)
     }
 
-    private static func photoURLs(from photos: [String: JSON]) -> [URL] {
-        photos.values.compactMap { $0["downloadURL"].stringValue }.compactMap(URL.init(string:))
+    private func loadListingPhotoURLs(
+        ownerID: String,
+        propertyID: String,
+        unitID: String,
+        onPhotoURLs: @escaping ([URL]) -> Void,
+        onNoPhotos: @escaping () -> Void
+    ) {
+        let unitPhotosPath = FirebaseDatabaseConstants.Path.unitPhotos(
+            ownerID: ownerID,
+            propertyID: propertyID,
+            unitID: unitID
+        )
+        let propertyPhotosPath = FirebaseDatabaseConstants.Path.propertyPhotos(
+            ownerID: ownerID,
+            propertyID: propertyID
+        )
+
+        var urls: [URL] = []
+        let group = DispatchGroup()
+
+        group.enter()
+        databaseFunctions.readOnceFromFirebaseAndReturnJSON(pathToValue: unitPhotosPath) { json in
+            urls.append(contentsOf: self.photoURLs(from: json))
+            group.leave()
+        }
+
+        group.enter()
+        databaseFunctions.readOnceFromFirebaseAndReturnJSON(pathToValue: propertyPhotosPath) { json in
+            urls.append(contentsOf: self.photoURLs(from: json))
+            group.leave()
+        }
+
+        group.notify(queue: .main) {
+            if urls.isEmpty {
+                onNoPhotos()
+            } else {
+                onPhotoURLs(urls)
+            }
+        }
     }
 
-    private static func unitDetailsPath(ownerID: String, propertyID: String, unitID: String, field: String) -> String {
-        "allUsers/ownerProfiles/\(ownerID)/profile/properties/\(propertyID)/units/\(unitID)/unitDetails/\(field)"
-    }
-
-    private static func unitPhotosPath(ownerID: String, propertyID: String, unitID: String) -> String {
-        unitDetailsPath(ownerID: ownerID, propertyID: propertyID, unitID: unitID, field: "photos")
-    }
-
-    private static func propertyPhotosPath(ownerID: String, propertyID: String) -> String {
-        "allUsers/ownerProfiles/\(ownerID)/profile/properties/\(propertyID)/propertyDetails/photos"
+    private func photoURLs(from photos: [String: JSON]) -> [URL] {
+        let downloadURLKey = FirebaseDatabaseConstants.Field.downloadURL
+        return photos.values
+            .compactMap { $0[downloadURLKey].stringValue }
+            .compactMap(URL.init(string:))
     }
 }
