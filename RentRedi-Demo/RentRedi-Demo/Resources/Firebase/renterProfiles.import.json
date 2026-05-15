@@ -1,0 +1,60 @@
+{
+  "rentredi_demo_renter": {
+    "tenantCardSubmissions": {
+      "0": {
+        "unitCode": "A-101",
+        "ownerID": "owner_demo_uid_001",
+        "propertyID": "property_demo_001",
+        "unitID": "unit_demo_101",
+        "renterID": "rentredi_demo_renter",
+        "tenantCardSubmissionID": "landlord_submission_key_001",
+        "address": "123 Market Street",
+        "city": "Austin",
+        "state": "TX",
+        "zip": "78701",
+        "leaseStartDate": 1735689600,
+        "leaseEndDate": 1767225600,
+        "monthlyRent": "1850",
+        "applicationFee": "45",
+        "guarantorApplicationFee": "35",
+        "timestamp": 1731456000,
+        "status": "invited",
+        "submissionType": "application",
+        "tenantScreeningComplete": false,
+        "transUnionApplicationID": 10001,
+        "transUnionScreeningRequestID": 20001,
+        "transUnionScreeningRequestRenterID": 30001,
+        "renterEmail": "renter@example.com",
+        "linkedApplicationID": null,
+        "linkedPrequalificationID": null
+      },
+      "1": {
+        "unitCode": "B-2",
+        "ownerID": "owner_demo_uid_001",
+        "propertyID": "property_demo_002",
+        "unitID": "unit_demo_202",
+        "renterID": "rentredi_demo_renter",
+        "tenantCardSubmissionID": "landlord_submission_key_002",
+        "address": "456 Oak Avenue",
+        "city": "Dallas",
+        "state": "TX",
+        "zip": "75201",
+        "leaseStartDate": 1738368000,
+        "leaseEndDate": 1769904000,
+        "monthlyRent": "2100",
+        "applicationFee": "0",
+        "guarantorApplicationFee": "0",
+        "timestamp": 1731542400,
+        "status": "invited",
+        "submissionType": "prequalification",
+        "tenantScreeningComplete": false,
+        "transUnionApplicationID": null,
+        "transUnionScreeningRequestID": null,
+        "transUnionScreeningRequestRenterID": null,
+        "renterEmail": "renter@example.com",
+        "linkedApplicationID": null,
+        "linkedPrequalificationID": null
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "owner_demo_uid_001": {
+    "profile": {
+      "properties": {
+        "property_demo_001": {
+          "units": {
+            "unit_demo_101": {
+              "unitDetails": {
+                "numberOfBedrooms": "2",
+                "numberOfBathrooms": "2",
+                "listingMonthlyRent": "1850",
+                "photos": {
+                  "unitPhoto1": {
+                    "downloadURL": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1200&q=80"
+                  },
+                  "unitPhoto2": {
+                    "downloadURL": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80"
+                  }
+                }
+              }
+            }
+          },
+          "propertyDetails": {
+            "photos": {
+              "propertyPhoto1": {
+                "downloadURL": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"
+              }
+            }
+          }
+        },
+        "property_demo_002": {
+          "units": {
+            "unit_demo_202": {
+              "unitDetails": {
+                "numberOfBedrooms": "1",
+                "numberOfBathrooms": "1",
+                "listingMonthlyRent": "2100",
+                "photos": {
+                  "unitPhoto1": {
+                    "downloadURL": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"
+                  }
+                }
+              }
+            }
+          },
+          "propertyDetails": {
+            "photos": {
+              "propertyPhoto1": {
+                "downloadURL": "https://picsum.photos/seed/rentredi-prop2/900/600"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
